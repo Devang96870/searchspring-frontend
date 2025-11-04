@@ -1,0 +1,150 @@
+:root {
+  --card-bg: #ffffff;
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 14px rgba(0, 0, 0, 0.1);
+  --transition: 0.25s ease-in-out;
+  --price-color: #2563eb;
+  --cart-green: #16a34a;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 1rem;
+  text-align: center;
+  transition: transform var(--transition), box-shadow var(--transition);
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Image */
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    #f3f4f6 40%,
+    #e5e7eb 50%,
+    #f3f4f6 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.imageWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.imageWrapper img[src] {
+  opacity: 1;
+}
+
+/* Typography */
+.title {
+  margin: 0.75rem 0 0.25rem 0;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.priceRow {
+  margin-top: 0.25rem;
+}
+
+.price {
+  color: var(--price-color);
+  font-weight: 700;
+  font-size: clamp(1rem, 2vw, 1.1rem);
+}
+
+.msrp {
+  margin-left: 6px;
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-size: 0.9rem;
+}
+
+/* 🛒 Add to Cart Button */
+.addButton {
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--price-color);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.addButton:hover {
+  background: #1e40af;
+  transform: translateY(-2px);
+}
+
+.addButton.active {
+  background: var(--cart-green);
+  animation: pop 0.2s ease-out;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 0.75rem;
+    border-radius: 10px;
+  }
+
+  .imageWrapper {
+    aspect-ratio: 4 / 3;
+  }
+
+  .title {
+    font-size: 0.85rem;
+  }
+}

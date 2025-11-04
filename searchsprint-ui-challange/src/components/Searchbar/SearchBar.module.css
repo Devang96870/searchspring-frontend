@@ -1,0 +1,124 @@
+.wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.searchBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.searchBar input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.searchBar input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.searchBar button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.searchBar button:hover {
+  background: #1d4ed8;
+}
+
+/* 🔹 Quick Search Tabs (Chips) */
+.quickTabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  padding: 0.25rem;
+}
+
+.quickTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background: #2563eb;
+  color: #fff;
+  transform: translateY(-1px);
+  border-color: #2563eb;
+}
+
+.tab:active {
+  transform: scale(0.96);
+}
+
+/* 🌟 Active / Selected Tab */
+.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Optional: animated underline (material-style) */
+.active::after {
+  content: "";
+  display: block;
+  width: 50%;
+  height: 2px;
+  background: #fff;
+  margin: 0.25rem auto 0;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.active:hover::after {
+  width: 80%;
+}
+
+@media (max-width: 600px) {
+  .tab {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.8rem;
+  }
+
+  .active::after {
+    display: none; /* cleaner mobile look */
+  }
+}
