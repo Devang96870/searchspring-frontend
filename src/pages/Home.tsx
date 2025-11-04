@@ -13,6 +13,7 @@ import Pagination from "../components/Pagination/Pagination";
 import type { Product } from "../interfaces/product.interface";
 import type { PaginationInfo } from "../interfaces/pagination.interface";
 import { fetchSearchResults } from "../services/searchspring.service";
+import styles from "./Home.module.css"; // ✅ Add loader styling here
 
 const ProductGrid = React.lazy(() => import("../components/Product/Productgrid/ProductGrid"));
 
@@ -36,7 +37,6 @@ function Home() {
     [query]
   );
 
-  // ✅ Core fetch logic
   const fetchResults = useCallback(
     async (q: string = query, page = 1, size = pageSize) => {
       setLoading(true);
@@ -55,12 +55,10 @@ function Home() {
     [activeQuery, pageSize, query]
   );
 
-  // 🧩 Initial load (default “jeans”)
   useEffect(() => {
     fetchResults("jeans", 1, pageSize);
   }, []);
 
-  // ✅ Trigger search only on Enter or button click
   const handleSearch = useCallback(
     (val: string) => {
       const finalQuery = val.trim() || "jeans";
@@ -119,7 +117,6 @@ function Home() {
           padding: "0 1rem",
         }}
       >
-        {/* ✅ SearchBar triggers search only on Enter / button click */}
         <SearchBar
           query={query}
           onQueryChange={setQuery}
@@ -127,16 +124,16 @@ function Home() {
           onQuickSearch={handleQuickSearch}
         />
 
+        {/* ✅ Modern loader while fetching */}
         {loading && (
-          <p style={{ textAlign: "center", marginTop: "2rem" }}>
-            Fetching products...
-          </p>
+          <div className={styles.loaderContainer}>
+            <div className={styles.spinner}></div>
+            <p className={styles.loaderText}>Loading awesome products...</p>
+          </div>
         )}
 
-        {/* ✅ When not loading */}
         {!loading && (
           <>
-            {/* ✅ If results exist */}
             {results.length > 0 ? (
               <>
                 <Pagination
@@ -154,7 +151,10 @@ function Home() {
 
                 <Suspense
                   fallback={
-                    <p style={{ textAlign: "center" }}>Loading products...</p>
+                    <div className={styles.loaderContainer}>
+                      <div className={styles.spinner}></div>
+                      <p className={styles.loaderText}>Loading products...</p>
+                    </div>
                   }
                 >
                   <ProductGrid products={results} />
@@ -174,7 +174,6 @@ function Home() {
                 />
               </>
             ) : (
-              /* 🚫 No results found message */
               <div
                 style={{
                   textAlign: "center",

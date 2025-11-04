@@ -1,0 +1,34 @@
+/* Modern animated loader */
+.loaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  gap: 1rem;
+  color: #333;
+  text-align: center;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(37, 117, 252, 0.2);
+  border-top-color: #2575fc;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  box-shadow: 0 0 12px rgba(37, 117, 252, 0.3);
+}
+
+.loaderText {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #444;
+  font-family: "Inter", sans-serif;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
