@@ -1,18 +1,24 @@
-import { useState, useEffect, type FormEvent, useCallback, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type FormEvent,
+  Suspense,
+} from "react";
+import React from "react";
+
 import Header from "../components/Header/Header";
 import SearchBar from "../components/Searchbar/SearchBar";
 import Pagination from "../components/Pagination/Pagination";
 import type { Product } from "../interfaces/product.interface";
 import type { PaginationInfo } from "../interfaces/pagination.interface";
 import { fetchSearchResults } from "../services/searchspring.service";
-import React from "react";
-
 
 const ProductGrid = React.lazy(() => import("../components/Product/Productgrid/ProductGrid"));
 
 const API_BASE = import.meta.env.VITE_API_BASE as string;
 const SITE_ID = import.meta.env.VITE_SITE_ID as string;
-
 
 function Home() {
   const [query, setQuery] = useState("");
@@ -23,12 +29,18 @@ function Home() {
     Number(import.meta.env.VITE_DEFAULT_RESULTS_PER_PAGE) || 20
   );
 
-  // helper to choose which query to use: user query if not empty, otherwise default
-  const activeQuery = (q?: string) => {
-    const v = (q ?? query).trim();
-    return v.length > 0 ? v : "jeans";
-  };
+  // store the debounce timer reference
+  const debounceRef = useRef<number | undefined>(undefined);
 
+  const activeQuery = useCallback(
+    (q?: string) => {
+      const v = (q ?? query).trim();
+      return v.length > 0 ? v : "jeans";
+    },
+    [query]
+  );
+
+  // ✅ Core fetch logic memoized
   const fetchResults = useCallback(
     async (q: string = query, page = 1, size = pageSize) => {
       setLoading(true);
@@ -44,58 +56,84 @@ function Home() {
         setLoading(false);
       }
     },
-    [pageSize, query] // note: query is here so fetchResults sees latest query when called without explicit q
+    [activeQuery, pageSize, query]
   );
 
-  // initial load uses default ('jeans')
+  // 🧩 Initial load (default “jeans”)
   useEffect(() => {
     fetchResults("jeans", 1, pageSize);
-  }, []); // run once on mount
+  }, []);
 
-  // handle search submit (explicit user search)
-  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    fetchResults(query, 1, pageSize);
-  };
+  // ✅ Debounce search when typing
+  useEffect(() => {
+    // skip debounce if empty
+    if (query.trim() === "") return;
 
-  // page handlers use activeQuery() which prefers the current search box value
-  const handleNext = () => {
+    window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(() => {
+      fetchResults(query, 1, pageSize);
+    }, 400); // 400ms debounce delay for smoother typing
+    return () => window.clearTimeout(debounceRef.current);
+  }, [query, pageSize]);
+
+  // ✅ Optimized search submit (immediate search)
+  const handleSearch = useCallback(
+    (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      fetchResults(query, 1, pageSize);
+    },
+    [fetchResults, query, pageSize]
+  );
+
+  const handleNext = useCallback(() => {
     if (pagination.nextPage) {
       window.scrollTo({ top: 0, behavior: "smooth" });
       fetchResults(activeQuery(), pagination.nextPage, pageSize);
     }
-  };
+  }, [pagination, activeQuery, fetchResults, pageSize]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (pagination.previousPage) {
       window.scrollTo({ top: 0, behavior: "smooth" });
       fetchResults(activeQuery(), pagination.previousPage, pageSize);
     }
-  };
+  }, [pagination, activeQuery, fetchResults, pageSize]);
 
-  const handlePageSelect = (pageNum: number) => {
-    if (!pageNum || pageNum < 1) return;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    fetchResults(activeQuery(), pageNum, pageSize);
-  };
+  const handlePageSelect = useCallback(
+    (pageNum: number) => {
+      if (!pageNum || pageNum < 1) return;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      fetchResults(activeQuery(), pageNum, pageSize);
+    },
+    [activeQuery, fetchResults, pageSize]
+  );
 
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    // when page size changes, go to page 1 using current query
-    fetchResults(activeQuery(), 1, size);
-  };
+  const handlePageSizeChange = useCallback(
+    (size: number) => {
+      setPageSize(size);
+      fetchResults(activeQuery(), 1, size);
+    },
+    [activeQuery, fetchResults]
+  );
 
+  // 🪶 Suspense fallback for lazy ProductGrid
   return (
     <>
       <Header />
-      <main style={{ maxWidth: "1100px", margin: "2rem auto", padding: "0 1rem" }}>
+      <main
+        style={{
+          maxWidth: "1100px",
+          margin: "2rem auto",
+          padding: "0 1rem",
+        }}
+      >
         <SearchBar
           query={query}
           onQueryChange={setQuery}
           onSearch={handleSearch}
           onQuickSearch={(keyword) => {
-            setQuery(keyword); // update input
-            fetchResults(keyword, 1, pageSize); // explicit search using the clicked quick tab
+            setQuery(keyword);
+            fetchResults(keyword, 1, pageSize);
           }}
         />
 
@@ -116,7 +154,9 @@ function Home() {
               hasPrev={!!pagination.previousPage}
             />
 
-            <ProductGrid products={results} />
+            <Suspense fallback={<p style={{ textAlign: "center" }}>Loading products...</p>}>
+              <ProductGrid products={results} />
+            </Suspense>
 
             <Pagination
               current={pagination.currentPage}
@@ -136,4 +176,5 @@ function Home() {
     </>
   );
 }
+
 export default Home;
