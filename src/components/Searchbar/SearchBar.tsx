@@ -4,7 +4,7 @@ import styles from "./SearchBar.module.css";
 interface Props {
   query: string;
   onQueryChange: (val: string) => void;
-  onSearch: (e: React.FormEvent<HTMLFormElement>) => void;
+  onSearch: (val: string) => void;
   onQuickSearch: (keyword: string) => void;
 }
 
@@ -20,19 +20,15 @@ export default function SearchBar({
 
   const handleQuickSearch = (tab: string) => {
     setActiveTab(tab);
-    onQuickSearch(tab); // direct search via quick tab
+    onQuickSearch(tab);
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!query.trim()) {
-      // 🧠 When input is empty, clear tab highlight
-      setActiveTab(null);
-    } else {
-      // 🧠 Manual search clears any tab highlight
-      setActiveTab(null);
-    }
-    onSearch(e);
+    // Always trigger search, even if empty
+    const trimmed = query.trim();
+    setActiveTab(null);
+    onSearch(trimmed);
   };
 
   return (

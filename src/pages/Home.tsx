@@ -2,7 +2,6 @@ import {
   useState,
   useEffect,
   useCallback,
-  useRef,
   type FormEvent,
   Suspense,
 } from "react";
@@ -29,9 +28,6 @@ function Home() {
     Number(import.meta.env.VITE_DEFAULT_RESULTS_PER_PAGE) || 20
   );
 
-  // store the debounce timer reference
-  const debounceRef = useRef<number | undefined>(undefined);
-
   const activeQuery = useCallback(
     (q?: string) => {
       const v = (q ?? query).trim();
@@ -40,7 +36,7 @@ function Home() {
     [query]
   );
 
-  // ✅ Core fetch logic memoized
+  // ✅ Core fetch logic
   const fetchResults = useCallback(
     async (q: string = query, page = 1, size = pageSize) => {
       setLoading(true);
@@ -64,25 +60,22 @@ function Home() {
     fetchResults("jeans", 1, pageSize);
   }, []);
 
-  // ✅ Debounce search when typing
-  useEffect(() => {
-    // skip debounce if empty
-    if (query.trim() === "") return;
-
-    window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => {
-      fetchResults(query, 1, pageSize);
-    }, 400); // 400ms debounce delay for smoother typing
-    return () => window.clearTimeout(debounceRef.current);
-  }, [query, pageSize]);
-
-  // ✅ Optimized search submit (immediate search)
+  // ✅ Trigger search only on Enter or button click
   const handleSearch = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      fetchResults(query, 1, pageSize);
+    (val: string) => {
+      const finalQuery = val.trim() || "jeans";
+      fetchResults(finalQuery, 1, pageSize);
     },
-    [fetchResults, query, pageSize]
+    [fetchResults, pageSize]
+  );
+
+  const handleQuickSearch = useCallback(
+    (val: string) => {
+      const finalQuery = val.trim() || "jeans";
+      setQuery(finalQuery);
+      fetchResults(finalQuery, 1, pageSize);
+    },
+    [fetchResults, pageSize]
   );
 
   const handleNext = useCallback(() => {
@@ -116,7 +109,6 @@ function Home() {
     [activeQuery, fetchResults]
   );
 
-  // 🪶 Suspense fallback for lazy ProductGrid
   return (
     <>
       <Header />
@@ -127,49 +119,77 @@ function Home() {
           padding: "0 1rem",
         }}
       >
+        {/* ✅ SearchBar triggers search only on Enter / button click */}
         <SearchBar
           query={query}
           onQueryChange={setQuery}
           onSearch={handleSearch}
-          onQuickSearch={(keyword) => {
-            setQuery(keyword);
-            fetchResults(keyword, 1, pageSize);
-          }}
+          onQuickSearch={handleQuickSearch}
         />
 
-        {loading && <p style={{ textAlign: "center" }}>Fetching products...</p>}
+        {loading && (
+          <p style={{ textAlign: "center", marginTop: "2rem" }}>
+            Fetching products...
+          </p>
+        )}
 
+        {/* ✅ When not loading */}
         {!loading && (
           <>
-            <Pagination
-              current={pagination.currentPage}
-              total={pagination.totalPages}
-              totalResults={pagination.totalResults}
-              pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-              onNext={handleNext}
-              onPrev={handlePrev}
-              onPageSelect={handlePageSelect}
-              hasNext={!!pagination.nextPage}
-              hasPrev={!!pagination.previousPage}
-            />
+            {/* ✅ If results exist */}
+            {results.length > 0 ? (
+              <>
+                <Pagination
+                  current={pagination.currentPage}
+                  total={pagination.totalPages}
+                  totalResults={pagination.totalResults}
+                  pageSize={pageSize}
+                  onPageSizeChange={handlePageSizeChange}
+                  onNext={handleNext}
+                  onPrev={handlePrev}
+                  onPageSelect={handlePageSelect}
+                  hasNext={!!pagination.nextPage}
+                  hasPrev={!!pagination.previousPage}
+                />
 
-            <Suspense fallback={<p style={{ textAlign: "center" }}>Loading products...</p>}>
-              <ProductGrid products={results} />
-            </Suspense>
+                <Suspense
+                  fallback={
+                    <p style={{ textAlign: "center" }}>Loading products...</p>
+                  }
+                >
+                  <ProductGrid products={results} />
+                </Suspense>
 
-            <Pagination
-              current={pagination.currentPage}
-              total={pagination.totalPages}
-              totalResults={pagination.totalResults}
-              pageSize={pageSize}
-              onPageSizeChange={handlePageSizeChange}
-              onNext={handleNext}
-              onPrev={handlePrev}
-              onPageSelect={handlePageSelect}
-              hasNext={!!pagination.nextPage}
-              hasPrev={!!pagination.previousPage}
-            />
+                <Pagination
+                  current={pagination.currentPage}
+                  total={pagination.totalPages}
+                  totalResults={pagination.totalResults}
+                  pageSize={pageSize}
+                  onPageSizeChange={handlePageSizeChange}
+                  onNext={handleNext}
+                  onPrev={handlePrev}
+                  onPageSelect={handlePageSelect}
+                  hasNext={!!pagination.nextPage}
+                  hasPrev={!!pagination.previousPage}
+                />
+              </>
+            ) : (
+              /* 🚫 No results found message */
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "3rem",
+                  color: "#555",
+                  fontSize: "1.1rem",
+                }}
+              >
+                <p>😕 No products found for your search.</p>
+                <p style={{ fontSize: "0.95rem", marginTop: "0.5rem" }}>
+                  Try searching for something else, or browse popular categories
+                  like <strong>Jeans</strong> or <strong>Shoes</strong>.
+                </p>
+              </div>
+            )}
           </>
         )}
       </main>

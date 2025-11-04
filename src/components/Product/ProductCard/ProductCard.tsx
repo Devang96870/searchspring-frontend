@@ -1,13 +1,16 @@
 import { useState, memo } from "react";
+import { useCart } from "../../../context/CartContext";
 import styles from "./ProductCard.module.css";
 import type { Product } from "../../../interfaces/product.interface";
 
 function ProductCardComponent({ item }: { item: Product }) {
   const [loaded, setLoaded] = useState(false);
   const [count, setCount] = useState(0);
+  const { addToCart } = useCart();
 
   const handleAddToCart = () => {
     setCount((prev) => prev + 1);
+    addToCart(); // update total count globally
   };
 
   return (
@@ -40,7 +43,6 @@ function ProductCardComponent({ item }: { item: Product }) {
         type="button"
         className={`${styles.addButton} ${count > 0 ? styles.active : ""}`}
         onClick={handleAddToCart}
-        aria-label={`Add ${item.name} to cart`}
       >
         {count > 0 ? `Added (${count})` : "Add to Cart"}
       </button>
