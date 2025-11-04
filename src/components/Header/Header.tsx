@@ -12,7 +12,7 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <h1 className={styles.logo}>🛍️ Searchspring Store</h1>
-      <span className={styles.tagline}>Find your style, instantly</span>
+      {/* <span className={styles.tagline}>Find your style, instantly</span> */}
 
       <div className={styles.cart} onClick={handleCartClick}>
         <ShoppingCart size={28} />
