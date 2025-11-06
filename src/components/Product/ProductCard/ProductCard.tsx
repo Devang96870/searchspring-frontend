@@ -21,7 +21,7 @@ function ProductCardComponent({ item }: { item: Product }) {
           alt={item.name}
           loading="lazy"
           decoding="async"
-          fetchPriority="low"
+          fetchPriority="high"
           onLoad={() => setLoaded(true)}
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = "none";
